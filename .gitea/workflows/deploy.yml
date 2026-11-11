@@ -1,0 +1,90 @@
+name: Deploy Laravel
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch yang mau di-deploy'
+        required: false
+        default: 'master'
+      runner:
+        description: 'Runner/host tujuan deploy'
+        required: false
+        default: '10.1.0.4'
+
+# Satu deploy per repo dalam satu waktu. Deploy yang sedang jalan tidak dibatalkan.
+concurrency:
+  group: deploy-ai-laravel-logistic
+  cancel-in-progress: false
+
+env:
+  NOTIF_URL: https://api-elco.eloo.my.id:8080/notif-gateway
+  # Runner ini jalan sebagai root; tanpa ini composer menunggu prompt dan macet.
+  COMPOSER_ALLOW_SUPERUSER: 1
+  COMPOSER_NO_INTERACTION: 1
+  COMPOSER_PROCESS_TIMEOUT: 300
+
+jobs:
+  deploy:
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 10
+    steps:
+      - name: Record start time
+        run: echo "START=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        timeout-minutes: 5
+
+      - name: Pull latest code
+        timeout-minutes: 5
+        run: |
+          cd /var/www/html/ai-laravel-logistic
+          git reset --hard
+          git clean -fd
+          timeout 120 git pull origin ${{ inputs.branch }}
+
+      - name: Install dependencies
+        timeout-minutes: 5
+        run: |
+          cd /var/www/html/ai-laravel-logistic
+          timeout 300 composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
+
+      - name: Laravel cache
+        timeout-minutes: 5
+        run: |
+          cd /var/www/html/ai-laravel-logistic
+          php artisan optimize:clear
+          php artisan config:cache
+          php artisan event:cache
+          php artisan queue:restart
+
+      - name: Restart PHP-FPM
+        timeout-minutes: 2
+        run: sudo -n systemctl restart php8.2-fpm
+
+      - name: Notify success
+        if: success()
+        run: |
+          ELAPSED=$(( $(date +%s) - ${START:-$(date +%s)} ))
+          MSG="Deploy [ai-laravel-logistic] to ${{ inputs.branch }} from ${{ gitea.actor }} — done in ${ELAPSED}s"
+          BODY=$(printf '{"category":"deployment","message":"%s"}' "$MSG")
+          CODE=$(curl -sS -o /tmp/notif.out -w '%{http_code}' --max-time 15 --retry 2 -X POST "$NOTIF_URL" \
+            -H "Authorization: Bearer ${{ vars.NOTIFY_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "$BODY") || CODE=000
+          echo "Notif success HTTP $CODE: $(cat /tmp/notif.out 2>/dev/null)"
+          [ "$CODE" -ge 200 ] && [ "$CODE" -lt 300 ] || { echo "::warning::Notifikasi success gagal (HTTP $CODE)"; }
+
+      - name: Notify failure
+        if: failure() || cancelled()
+        run: |
+          ELAPSED=$(( $(date +%s) - ${START:-$(date +%s)} ))
+          MSG="❌ Deploy [ai-laravel-logistic] to ${{ inputs.branch }} from ${{ gitea.actor }} — FAILED after ${ELAPSED}s (lihat log run)"
+          BODY=$(printf '{"category":"deployment","message":"%s"}' "$MSG")
+          CODE=$(curl -sS -o /tmp/notif.out -w '%{http_code}' --max-time 15 --retry 2 -X POST "$NOTIF_URL" \
+            -H "Authorization: Bearer ${{ vars.NOTIFY_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "$BODY") || CODE=000
+          echo "Notif failure HTTP $CODE: $(cat /tmp/notif.out 2>/dev/null)"
+          [ "$CODE" -ge 200 ] && [ "$CODE" -lt 300 ] || { echo "::warning::Notifikasi failure gagal (HTTP $CODE)"; }
