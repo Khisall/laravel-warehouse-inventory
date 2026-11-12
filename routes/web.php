@@ -7,6 +7,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShippingController;
 use App\Http\Controllers\StockMovementController;
+use App\Http\Controllers\StockOpnameController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
 use Illuminate\Support\Facades\Route;
@@ -51,6 +52,19 @@ Route::middleware('auth')->group(function () {
     Route::prefix('activity')->name('activity.')->group(function () {
         Route::get('/', [StockMovementController::class, 'index'])->name('index');
         Route::post('/', [StockMovementController::class, 'store'])->name('store');
+    });
+
+    // Stock Opname (Digital Physical Audit & Reconciliation)
+    Route::prefix('opname')->name('opname.')->middleware('role:super_admin,warehouse_manager,warehouse_staff')->group(function () {
+        Route::get('/', [StockOpnameController::class, 'index'])->name('index');
+        Route::post('/', [StockOpnameController::class, 'store'])->name('store');
+        Route::get('/{opname}', [StockOpnameController::class, 'show'])->name('show');
+        Route::post('/{opname}/scan', [StockOpnameController::class, 'scanBarcode'])->name('scan');
+        Route::put('/{opname}/items/{item}', [StockOpnameController::class, 'updateItem'])->name('update-item');
+        Route::post('/{opname}/quick-fill', [StockOpnameController::class, 'quickFillAll'])->name('quick-fill');
+        Route::post('/{opname}/reconcile', [StockOpnameController::class, 'reconcile'])->name('reconcile');
+        Route::post('/{opname}/cancel', [StockOpnameController::class, 'cancel'])->name('cancel');
+        Route::get('/{opname}/report', [StockOpnameController::class, 'report'])->name('report');
     });
 
     // Marketplace Listings & Integration

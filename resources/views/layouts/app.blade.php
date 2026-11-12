@@ -255,6 +255,17 @@
                             <span :class="sidebarOpen ? 'block' : 'hidden'">Warehouses</span>
                         </a>
 
+                        <!-- Stock Opname -->
+                        @if(in_array(auth()->user()?->role, ['super_admin', 'warehouse_manager', 'warehouse_staff']))
+                            <a href="{{ route('opname.index') }}"
+                               class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition group {{ request()->routeIs('opname.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532] hover:text-slate-200' }}">
+                                <div class="w-5 text-center mr-3 text-base {{ request()->routeIs('opname.*') ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400' }}">
+                                    <i class="fa-solid fa-clipboard-check"></i>
+                                </div>
+                                <span :class="sidebarOpen ? 'block' : 'hidden'">Stock Opname</span>
+                            </a>
+                        @endif
+
                         <!-- Marketplace -->
                         <a href="{{ route('marketplace.index') }}"
                            class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition group {{ request()->routeIs('marketplace.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532] hover:text-slate-200' }}">
@@ -392,6 +403,11 @@
                             <a href="{{ route('warehouses.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('warehouses.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
                                 <i class="fa-solid fa-layer-group w-6 text-emerald-400"></i> Warehouses
                             </a>
+                            @if(in_array(auth()->user()?->role, ['super_admin', 'warehouse_manager', 'warehouse_staff']))
+                                <a href="{{ route('opname.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('opname.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
+                                    <i class="fa-solid fa-clipboard-check w-6 text-emerald-400"></i> Stock Opname
+                                </a>
+                            @endif
                             <a href="{{ route('marketplace.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('marketplace.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
                                 <i class="fa-solid fa-store w-6 text-emerald-400"></i> Marketplace
                             </a>
