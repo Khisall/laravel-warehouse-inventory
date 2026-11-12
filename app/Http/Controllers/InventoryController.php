@@ -256,6 +256,10 @@ class InventoryController extends Controller
      */
     public function destroy(Product $product)
     {
+        if (!auth()->user()->canDeleteItems()) {
+            return redirect()->back()->with('error', 'Akses ditolak: Anda tidak memiliki izin untuk menghapus barang inventaris.');
+        }
+
         $sku = $product->sku;
         $product->delete();
 

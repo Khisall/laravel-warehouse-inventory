@@ -167,17 +167,61 @@
                     </span>
                 </a>
 
-                <!-- User Profile Avatar -->
-                <div class="flex items-center space-x-3 pl-2 border-l border-[#1f3344]">
-                    <div class="relative group cursor-pointer">
-                        <div class="w-9 h-9 rounded-full ring-2 ring-emerald-500/40 overflow-hidden bg-slate-800">
-                            <img src="{{ asset('images/avatar.svg') }}" alt="User Profile" class="w-full h-full object-cover">
+                <!-- User Profile Avatar & Dropdown -->
+                <div class="relative flex items-center space-x-3 pl-2 border-l border-[#1f3344]" x-data="{ profileOpen: false }" @click.away="profileOpen = false">
+                    <div class="flex items-center space-x-3 cursor-pointer" @click="profileOpen = !profileOpen">
+                        <div class="relative">
+                            <div class="w-9 h-9 rounded-full ring-2 ring-emerald-500/40 overflow-hidden bg-slate-800 flex items-center justify-center font-bold text-xs text-white">
+                                {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 2)) }}
+                            </div>
+                            <div class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-[#0d1821]"></div>
                         </div>
-                        <div class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-[#0d1821]"></div>
+                        <div class="hidden xl:block text-left">
+                            <div class="text-xs font-semibold text-white truncate max-w-[130px]">{{ auth()->user()->name ?? 'Pengguna' }}</div>
+                            <div class="text-[11px] text-emerald-400 font-semibold">{{ auth()->user()->role_badge_label ?? 'Staff' }}</div>
+                        </div>
                     </div>
-                    <div class="hidden xl:block text-left">
-                        <div class="text-xs font-semibold text-white">Gudang Admin</div>
-                        <div class="text-[11px] text-emerald-400">Warehouse Lead</div>
+
+                    <!-- Profile Dropdown Menu -->
+                    <div x-show="profileOpen"
+                         x-transition
+                         style="display: none;"
+                         class="absolute right-0 top-12 w-64 rounded-xl bg-[#13202b] border border-[#1f3344] shadow-2xl py-2 z-50 text-xs text-slate-200">
+                        <div class="px-3.5 py-2 border-b border-[#1f3344]">
+                            <div class="font-bold text-white">{{ auth()->user()->name ?? 'User' }}</div>
+                            <div class="text-[11px] text-slate-400 font-mono truncate">{{ auth()->user()->email ?? '' }}</div>
+                            <span class="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold {{ auth()->user()->role_badge_color ?? '' }}">
+                                {{ auth()->user()->role_badge_label ?? 'Staff' }}
+                            </span>
+                        </div>
+
+                        <div class="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Coba Demo Switch Peran:</div>
+                        <a href="{{ route('auth.demo', 'super_admin') }}" class="block px-3.5 py-1.5 text-slate-300 hover:bg-[#162532] hover:text-emerald-400">
+                            👑 Owner / Super Admin
+                        </a>
+                        <a href="{{ route('auth.demo', 'warehouse_manager') }}" class="block px-3.5 py-1.5 text-slate-300 hover:bg-[#162532] hover:text-cyan-400">
+                            🏭 Kepala Gudang
+                        </a>
+                        <a href="{{ route('auth.demo', 'warehouse_staff') }}" class="block px-3.5 py-1.5 text-slate-300 hover:bg-[#162532] hover:text-amber-400">
+                            📦 Operator Gudang
+                        </a>
+                        <a href="{{ route('auth.demo', 'sales_staff') }}" class="block px-3.5 py-1.5 text-slate-300 hover:bg-[#162532] hover:text-purple-400">
+                            🛒 Admin Penjualan
+                        </a>
+
+                        <div class="border-t border-[#1f3344] my-1"></div>
+                        @if(auth()->user()?->canManageUsers())
+                            <a href="{{ route('users.index') }}" class="block px-3.5 py-2 text-slate-300 hover:bg-[#162532] hover:text-emerald-400 font-semibold">
+                                <i class="fa-solid fa-users-gear mr-1.5 text-emerald-400"></i> Kelola Tim & Hak Akses
+                            </a>
+                        @endif
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="w-full text-left px-3.5 py-2 text-rose-400 hover:bg-rose-500/10 font-bold flex items-center gap-2">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                                <span>Keluar (Log Out)</span>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -238,27 +282,42 @@
                             <span :class="sidebarOpen ? 'block' : 'hidden'">Shipping</span>
                         </a>
 
-                        <!-- Reports -->
-                        <a href="{{ route('reports.index') }}"
-                           class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition group {{ request()->routeIs('reports.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532] hover:text-slate-200' }}">
-                            <div class="w-5 text-center mr-3 text-base {{ request()->routeIs('reports.*') ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400' }}">
-                                <i class="fa-solid fa-chart-pie"></i>
-                            </div>
-                            <span :class="sidebarOpen ? 'block' : 'hidden'">Reports</span>
-                        </a>
+                        <!-- Reports (Managers & Super Admin) -->
+                        @if(auth()->user()?->canViewFinancials())
+                            <a href="{{ route('reports.index') }}"
+                               class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition group {{ request()->routeIs('reports.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532] hover:text-slate-200' }}">
+                                <div class="w-5 text-center mr-3 text-base {{ request()->routeIs('reports.*') ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400' }}">
+                                    <i class="fa-solid fa-chart-pie"></i>
+                                </div>
+                                <span :class="sidebarOpen ? 'block' : 'hidden'">Reports</span>
+                            </a>
+                        @endif
                     </nav>
                 </div>
 
                 <!-- Secondary Menu (Bottom) -->
                 <div class="space-y-1 px-2.5 pt-4 border-t border-[#1f3344]/80">
-                    <!-- Settings -->
-                    <a href="{{ route('settings.index') }}"
-                       class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition group {{ request()->routeIs('settings.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532] hover:text-slate-200' }}">
-                        <div class="w-5 text-center mr-3 text-base {{ request()->routeIs('settings.*') ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400' }}">
-                            <i class="fa-solid fa-gear"></i>
-                        </div>
-                        <span :class="sidebarOpen ? 'block' : 'hidden'">Settings</span>
-                    </a>
+                    <!-- Kelola Tim & Hak Akses (Super Admin only) -->
+                    @if(auth()->user()?->canManageUsers())
+                        <a href="{{ route('users.index') }}"
+                           class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition group {{ request()->routeIs('users.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532] hover:text-slate-200' }}">
+                            <div class="w-5 text-center mr-3 text-base {{ request()->routeIs('users.*') ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400' }}">
+                                <i class="fa-solid fa-users-gear"></i>
+                            </div>
+                            <span :class="sidebarOpen ? 'block' : 'hidden'">Tim & Akses</span>
+                        </a>
+                    @endif
+
+                    <!-- Settings (Super Admin only) -->
+                    @if(auth()->user()?->isSuperAdmin())
+                        <a href="{{ route('settings.index') }}"
+                           class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition group {{ request()->routeIs('settings.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532] hover:text-slate-200' }}">
+                            <div class="w-5 text-center mr-3 text-base {{ request()->routeIs('settings.*') ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400' }}">
+                                <i class="fa-solid fa-gear"></i>
+                            </div>
+                            <span :class="sidebarOpen ? 'block' : 'hidden'">Settings</span>
+                        </a>
+                    @endif
 
                     <!-- Activity & Inventory History -->
                     <a href="{{ route('activity.index') }}"
@@ -288,13 +347,16 @@
                     </a>
 
                     <!-- Log Out -->
-                    <a href="#" onclick="alert('Anda login sebagai Demo Administrator'); return false;"
-                       class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-rose-500/10 hover:text-rose-400 transition group">
-                        <div class="w-5 text-center mr-3 text-base text-slate-400 group-hover:text-rose-400">
-                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                        </div>
-                        <span :class="sidebarOpen ? 'block' : 'hidden'">Log Out</span>
-                    </a>
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button type="submit"
+                                class="w-full flex items-center px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-rose-500/10 hover:text-rose-400 transition group">
+                            <div class="w-5 text-center mr-3 text-base text-slate-400 group-hover:text-rose-400">
+                                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                            </div>
+                            <span :class="sidebarOpen ? 'block' : 'hidden'">Log Out</span>
+                        </button>
+                    </form>
                 </div>
             </aside>
 
@@ -339,19 +401,34 @@
                             <a href="{{ route('shipping.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('shipping.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
                                 <i class="fa-solid fa-truck-fast w-6 text-emerald-400"></i> Shipping
                             </a>
-                            <a href="{{ route('reports.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('reports.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
-                                <i class="fa-solid fa-chart-pie w-6 text-emerald-400"></i> Reports
-                            </a>
+                            @if(auth()->user()?->canViewFinancials())
+                                <a href="{{ route('reports.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('reports.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
+                                    <i class="fa-solid fa-chart-pie w-6 text-emerald-400"></i> Reports
+                                </a>
+                            @endif
                         </nav>
                     </div>
 
                     <div class="pt-4 border-t border-[#1f3344] space-y-1">
+                        @if(auth()->user()?->canManageUsers())
+                            <a href="{{ route('users.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('users.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
+                                <i class="fa-solid fa-users-gear w-6 text-emerald-400"></i> Tim & Hak Akses
+                            </a>
+                        @endif
                         <a href="{{ route('activity.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:bg-[#162532]">
                             <i class="fa-solid fa-clock-rotate-left w-6"></i> Activity & Inventory
                         </a>
-                        <a href="{{ route('settings.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:bg-[#162532]">
-                            <i class="fa-solid fa-gear w-6"></i> Settings
-                        </a>
+                        @if(auth()->user()?->isSuperAdmin())
+                            <a href="{{ route('settings.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:bg-[#162532]">
+                                <i class="fa-solid fa-gear w-6"></i> Settings
+                            </a>
+                        @endif
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="w-full text-left flex items-center px-3 py-2 rounded-lg text-sm font-medium text-rose-400 hover:bg-rose-500/10">
+                                <i class="fa-solid fa-arrow-right-from-bracket w-6"></i> Log Out
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

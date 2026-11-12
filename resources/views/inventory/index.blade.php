@@ -54,14 +54,25 @@
             <div class="text-[11px] text-slate-400 mt-1">Siap dikirim</div>
         </div>
 
-        <div class="bg-[#13202b] border border-[#1f3344] rounded-xl p-4 hover:border-emerald-500/40 transition">
-            <div class="flex items-center justify-between text-slate-400 text-xs mb-1.5">
-                <span>Valuasi Inventaris</span>
-                <i class="fa-solid fa-vault text-emerald-400"></i>
+        @if(auth()->user()?->canViewFinancials())
+            <div class="bg-[#13202b] border border-[#1f3344] rounded-xl p-4 hover:border-emerald-500/40 transition">
+                <div class="flex items-center justify-between text-slate-400 text-xs mb-1.5">
+                    <span>Valuasi Inventaris</span>
+                    <i class="fa-solid fa-vault text-emerald-400"></i>
+                </div>
+                <div class="text-2xl font-bold text-white tracking-tight">${{ number_format($totalValuation, 2) }}</div>
+                <div class="text-[11px] text-emerald-400 mt-1">Nilai aset total (Owner)</div>
             </div>
-            <div class="text-2xl font-bold text-white tracking-tight">${{ number_format($totalValuation, 2) }}</div>
-            <div class="text-[11px] text-emerald-400 mt-1">Nilai aset total</div>
-        </div>
+        @else
+            <div class="bg-[#13202b] border border-[#1f3344] rounded-xl p-4 hover:border-emerald-500/40 transition">
+                <div class="flex items-center justify-between text-slate-400 text-xs mb-1.5">
+                    <span>Total Kategori</span>
+                    <i class="fa-solid fa-shapes text-emerald-400"></i>
+                </div>
+                <div class="text-2xl font-bold text-white tracking-tight">{{ $categories->count() }}</div>
+                <div class="text-[11px] text-slate-400 mt-1">Kategori aktif</div>
+            </div>
+        @endif
 
         <div class="bg-[#13202b] border border-[#1f3344] rounded-xl p-4 hover:border-emerald-500/40 transition">
             <div class="flex items-center justify-between text-slate-400 text-xs mb-1.5">
@@ -402,13 +413,15 @@
                                             <i class="fa-solid fa-pen-to-square text-xs"></i>
                                         </button>
 
-                                        <!-- Delete -->
-                                        <button type="button"
-                                                @click="if(confirm('Hapus {{ $product->sku }} - {{ addslashes($product->title) }}?')) { document.getElementById('delete-form-{{ $product->id }}').submit(); }"
-                                                title="Hapus Barang"
-                                                class="w-7 h-7 rounded-lg bg-[#182835] hover:bg-rose-500/20 text-rose-400 border border-[#233b4e] flex items-center justify-center transition">
-                                            <i class="fa-solid fa-trash text-xs"></i>
-                                        </button>
+                                        @if(auth()->user()?->canDeleteItems())
+                                            <!-- Delete -->
+                                            <button type="button"
+                                                    @click="if(confirm('Hapus {{ $product->sku }} - {{ addslashes($product->title) }}?')) { document.getElementById('delete-form-{{ $product->id }}').submit(); }"
+                                                    title="Hapus Barang"
+                                                    class="w-7 h-7 rounded-lg bg-[#182835] hover:bg-rose-500/20 text-rose-400 border border-[#233b4e] flex items-center justify-center transition">
+                                                <i class="fa-solid fa-trash text-xs"></i>
+                                            </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

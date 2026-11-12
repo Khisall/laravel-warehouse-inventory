@@ -21,14 +21,45 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Create Default Admin User
-        $user = User::firstOrCreate(
-            ['email' => 'admin@inventory.com'],
+        // 1. Create Default Role Users
+        $defaultUsers = [
             [
-                'name' => 'Gudang Manager',
+                'email' => 'admin@inventory.com',
+                'name' => 'Khisal (Owner / Super Admin)',
+                'role' => 'super_admin',
+                'phone' => '+62 812-3456-7890',
                 'password' => Hash::make('password123'),
-            ]
-        );
+                'is_active' => true,
+            ],
+            [
+                'email' => 'manager@inventory.com',
+                'name' => 'Budi Santoso (Kepala Gudang)',
+                'role' => 'warehouse_manager',
+                'phone' => '+62 813-9876-5432',
+                'password' => Hash::make('password123'),
+                'is_active' => true,
+            ],
+            [
+                'email' => 'staff@inventory.com',
+                'name' => 'Andi Pratama (Operator Gudang)',
+                'role' => 'warehouse_staff',
+                'phone' => '+62 815-1122-3344',
+                'password' => Hash::make('password123'),
+                'is_active' => true,
+            ],
+            [
+                'email' => 'sales@inventory.com',
+                'name' => 'Rina Marlina (Admin Penjualan)',
+                'role' => 'sales_staff',
+                'phone' => '+62 818-5566-7788',
+                'password' => Hash::make('password123'),
+                'is_active' => true,
+            ],
+        ];
+
+        foreach ($defaultUsers as $uData) {
+            User::updateOrCreate(['email' => $uData['email']], $uData);
+        }
 
         // 2. Create Warehouses
         $warehousesData = [
@@ -335,23 +366,25 @@ class DatabaseSeeder extends Seeder
         }
 
         // 5. Create Sample Orders
-        $order1 = Order::create([
-            'order_number' => 'ORD-2024-0801',
-            'customer_name' => 'Alexander Pratama',
-            'customer_email' => 'alex@example.com',
-            'customer_phone' => '081299887766',
-            'marketplace' => 'Shopee Official',
-            'status' => 'completed',
-            'shipping_status' => 'delivered',
-            'tracking_number' => 'JNE-CGK-8921029',
-            'courier' => 'JNE Regular',
-            'total_amount' => 446.40,
-            'shipping_address' => 'Jl. Sudirman No. 45, Kebayoran Baru, Jakarta Selatan',
-            'notes' => 'Customer requested urgent delivery.',
-        ]);
+        $order1 = Order::firstOrCreate(
+            ['order_number' => 'ORD-2024-0801'],
+            [
+                'customer_name' => 'Alexander Pratama',
+                'customer_email' => 'alex@example.com',
+                'customer_phone' => '081299887766',
+                'marketplace' => 'Shopee Official',
+                'status' => 'completed',
+                'shipping_status' => 'delivered',
+                'tracking_number' => 'JNE-CGK-8921029',
+                'courier' => 'JNE Regular',
+                'total_amount' => 446.40,
+                'shipping_address' => 'Jl. Sudirman No. 45, Kebayoran Baru, Jakarta Selatan',
+                'notes' => 'Customer requested urgent delivery.',
+            ]
+        );
 
         $order1Product = Product::where('sku', 'MRP400')->first();
-        if ($order1Product) {
+        if ($order1Product && $order1->items()->count() === 0) {
             OrderItem::create([
                 'order_id' => $order1->id,
                 'product_id' => $order1Product->id,
@@ -363,23 +396,25 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        $order2 = Order::create([
-            'order_number' => 'ORD-2024-0802',
-            'customer_name' => 'Sarah Melinda',
-            'customer_email' => 'sarah.m@example.com',
-            'customer_phone' => '081377665544',
-            'marketplace' => 'Tokopedia Mall',
-            'status' => 'processing',
-            'shipping_status' => 'packing',
-            'tracking_number' => 'SICEPAT-0092182',
-            'courier' => 'SiCepat BEST',
-            'total_amount' => 223.20,
-            'shipping_address' => 'Jl. Dago Asri No. 18, Coblong, Bandung, Jawa Barat',
-            'notes' => 'Please verify size before packing.',
-        ]);
+        $order2 = Order::firstOrCreate(
+            ['order_number' => 'ORD-2024-0802'],
+            [
+                'customer_name' => 'Sarah Melinda',
+                'customer_email' => 'sarah.m@example.com',
+                'customer_phone' => '081377665544',
+                'marketplace' => 'Tokopedia Mall',
+                'status' => 'processing',
+                'shipping_status' => 'packing',
+                'tracking_number' => 'SICEPAT-0092182',
+                'courier' => 'SiCepat BEST',
+                'total_amount' => 223.20,
+                'shipping_address' => 'Jl. Dago Asri No. 18, Coblong, Bandung, Jawa Barat',
+                'notes' => 'Please verify size before packing.',
+            ]
+        );
 
         $order2Product = Product::where('sku', 'MRP405')->first();
-        if ($order2Product) {
+        if ($order2Product && $order2->items()->count() === 0) {
             OrderItem::create([
                 'order_id' => $order2->id,
                 'product_id' => $order2Product->id,
