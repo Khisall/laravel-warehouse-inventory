@@ -17,8 +17,11 @@ Route::get('/', function () {
 Route::prefix('inventory')->name('inventory.')->group(function () {
     Route::get('/', [InventoryController::class, 'index'])->name('index');
     Route::post('/', [InventoryController::class, 'store'])->name('store');
+    Route::get('/print-labels', [InventoryController::class, 'printBulkLabels'])->name('print-bulk-labels');
+    Route::get('/lookup/{sku}', [InventoryController::class, 'lookupSku'])->name('lookup-sku');
     Route::put('/{product}', [InventoryController::class, 'update'])->name('update');
     Route::delete('/{product}', [InventoryController::class, 'destroy'])->name('destroy');
+    Route::get('/{product}/print-label', [InventoryController::class, 'printLabel'])->name('print-label');
     Route::post('/{product}/adjust-stock', [InventoryController::class, 'adjustStock'])->name('adjust-stock');
     Route::post('/bulk-action', [InventoryController::class, 'bulkAction'])->name('bulk-action');
     Route::get('/export/csv', [InventoryController::class, 'exportCsv'])->name('export-csv');
@@ -49,6 +52,7 @@ Route::prefix('marketplace')->name('marketplace.')->group(function () {
 Route::prefix('orders')->name('orders.')->group(function () {
     Route::get('/', [OrderController::class, 'index'])->name('index');
     Route::post('/', [OrderController::class, 'store'])->name('store');
+    Route::get('/{order}/delivery-order', [OrderController::class, 'deliveryOrder'])->name('delivery-order');
     Route::put('/{order}/status', [OrderController::class, 'updateStatus'])->name('update-status');
 });
 

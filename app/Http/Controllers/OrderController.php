@@ -112,4 +112,13 @@ class OrderController extends Controller
 
         return redirect()->route('orders.index')->with('success', 'Status pesanan ' . $order->order_number . ' berhasil diperbarui.');
     }
+
+    /**
+     * Display printable Surat Jalan / Delivery Order document.
+     */
+    public function deliveryOrder(Order $order)
+    {
+        $order->load(['items.product.warehouse']);
+        return view('orders.delivery-order', compact('order'));
+    }
 }

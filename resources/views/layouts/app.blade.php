@@ -48,6 +48,12 @@
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.3/dist/cdn.min.js"></script>
 
+    <!-- Html5-Qrcode Barcode & QR Camera Scanner -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+    <!-- JsBarcode -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+
     <style>
         body {
             background-color: #0b141b;
@@ -89,7 +95,7 @@
     </style>
     @stack('styles')
 </head>
-<body x-data="{ sidebarOpen: true, mobileSidebarOpen: false }">
+<body x-data="warehouseApp()">
     <div class="min-h-screen flex flex-col bg-[#0b141b] text-slate-200">
 
         <!-- Top Header Navigation -->
@@ -133,8 +139,17 @@
                 </form>
             </div>
 
-            <!-- Top Right Profile & Notifications -->
-            <div class="flex items-center space-x-4">
+            <!-- Top Right Profile, Scanner & Notifications -->
+            <div class="flex items-center space-x-3 md:space-x-4">
+                <!-- Scan Barcode Button -->
+                <button type="button"
+                        @click="openScanner()"
+                        title="Scan Barcode / QR Code Barang"
+                        class="px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/30 transition text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-emerald-500/10">
+                    <i class="fa-solid fa-barcode text-sm text-emerald-400"></i>
+                    <span class="hidden sm:inline">Scan Barcode</span>
+                </button>
+
                 <!-- Quick Sync Button -->
                 <form action="{{ route('marketplace.sync-all') }}" method="POST" class="hidden lg:block">
                     @csrf
@@ -386,6 +401,292 @@
             </main>
         </div>
     </div>
+
+    <!-- ==================== MODAL: BARCODE & QR SCANNER ==================== -->
+    <div x-show="scannerOpen"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+         style="display: none;">
+
+        <div @click.away="closeScanner()" class="bg-[#13202b] border border-[#1f3344] rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4 text-slate-200">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-3 border-b border-[#1f3344]">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                        <i class="fa-solid fa-barcode"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-white">Scanner Barcode & QR Code Gudang</h3>
+                        <p class="text-xs text-slate-400">Dukungan Kamera HP / Webcam & USB Handheld Gun</p>
+                    </div>
+                </div>
+                <button @click="closeScanner()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- View 1: Camera Scanner Active -->
+            <div x-show="!scannedProduct" class="space-y-4">
+                <!-- Camera Viewport Box -->
+                <div class="relative bg-slate-950 rounded-xl overflow-hidden border border-[#1f3344] min-h-[240px] flex items-center justify-center">
+                    <div id="qr-reader" class="w-full"></div>
+                    <div x-show="scanLoading" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center space-y-2 z-10">
+                        <i class="fa-solid fa-circle-notch fa-spin text-emerald-400 text-2xl"></i>
+                        <span class="text-xs text-emerald-400 font-semibold">Mencari data SKU di gudang...</span>
+                    </div>
+                </div>
+
+                <!-- Scanner Status / Error Alert -->
+                <div x-show="scannerError" class="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs text-rose-300 flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
+                    <span x-text="scannerError"></span>
+                </div>
+
+                <!-- Manual Input / USB Gun Input Fallback -->
+                <div class="pt-2 border-t border-[#1f3344]/80">
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">
+                        Input Manual atau Tembak Barcode Gun USB:
+                    </label>
+                    <form @submit.prevent="if(scannerManualInput) lookupBarcode(scannerManualInput)" class="flex gap-2">
+                        <input type="text"
+                               x-model="scannerManualInput"
+                               placeholder="Scan / ketik SKU (contoh: MRP400)..."
+                               class="flex-1 px-3 py-2 bg-[#0e1922] border border-[#1f3344] rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500">
+                        <button type="submit" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-xl transition">
+                            Cari
+                        </button>
+                    </form>
+                    <p class="text-[11px] text-slate-500 mt-1">
+                        <i class="fa-solid fa-lightbulb text-amber-400"></i> Tip: Alat Barcode Scanner USB otomatis terdeteksi saat tombol ditekan.
+                    </p>
+                </div>
+            </div>
+
+            <!-- View 2: Scanned Product Found Card -->
+            <div x-show="scannedProduct" class="space-y-4" style="display: none;">
+                <!-- Product Overview Card -->
+                <div class="p-4 bg-[#0e1922] border border-emerald-500/40 rounded-xl flex items-start gap-4">
+                    <div class="w-16 h-16 rounded-lg bg-slate-900 border border-[#1f3344] p-1 flex-shrink-0 flex items-center justify-center">
+                        <img :src="scannedProduct?.image_url" alt="" class="w-full h-full object-contain">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span class="font-extrabold text-base text-white" x-text="scannedProduct?.sku"></span>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#162532] text-slate-300 border border-[#22394c]" x-text="scannedProduct?.status_code"></span>
+                        </div>
+                        <div class="text-xs font-semibold text-cyan-400 truncate mt-0.5" x-text="scannedProduct?.title"></div>
+                        <div class="text-[11px] text-slate-400 mt-1 flex flex-wrap gap-x-3">
+                            <span>Kategori: <strong class="text-slate-300" x-text="scannedProduct?.category"></strong></span>
+                            <span>Lokasi Rak: <strong class="text-emerald-400" x-text="scannedProduct?.warehouse_location"></strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stock Counter Box -->
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="p-2.5 bg-[#162532] border border-[#1f3344] rounded-xl">
+                        <div class="text-[10px] text-slate-400">Stok Saat Ini</div>
+                        <div class="text-lg font-bold text-white mt-0.5" x-text="scannedProduct?.quantity + ' ' + (scannedProduct?.unit || 'pcs')"></div>
+                    </div>
+                    <div class="p-2.5 bg-[#162532] border border-[#1f3344] rounded-xl">
+                        <div class="text-[10px] text-slate-400">Batch No.</div>
+                        <div class="text-xs font-mono font-bold text-cyan-400 mt-1" x-text="scannedProduct?.batch_number"></div>
+                    </div>
+                    <div class="p-2.5 bg-[#162532] border border-[#1f3344] rounded-xl">
+                        <div class="text-[10px] text-slate-400">Harga Satuan</div>
+                        <div class="text-xs font-bold text-emerald-400 mt-1" x-text="scannedProduct?.formatted_price"></div>
+                    </div>
+                </div>
+
+                <!-- Fast Stock In/Out Form for Staff -->
+                <form :action="'{{ url('inventory') }}/' + scannedProduct?.id + '/adjust-stock'" method="POST" class="p-4 bg-[#162532] border border-[#1f3344] rounded-xl space-y-3">
+                    @csrf
+                    <div class="text-xs font-bold text-white flex items-center justify-between">
+                        <span>Aksi Cepat Mutasi Fisik:</span>
+                        <div class="flex items-center gap-2">
+                            <label class="cursor-pointer text-[11px]">
+                                <input type="radio" name="type" value="in" checked class="text-emerald-500">
+                                <span class="text-emerald-400 font-bold ml-1">+ Masuk (In)</span>
+                            </label>
+                            <label class="cursor-pointer text-[11px]">
+                                <input type="radio" name="type" value="out" class="text-rose-500">
+                                <span class="text-rose-400 font-bold ml-1">- Keluar (Out)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <input type="number" name="quantity" min="1" value="1" required class="w-24 px-3 py-1.5 bg-[#0e1922] border border-[#1f3344] rounded-xl text-center font-bold text-sm text-white focus:outline-none focus:border-emerald-500">
+                        <input type="text" name="notes" placeholder="Catatan mutasi (contoh: restock rak)..." class="flex-1 px-3 py-1.5 bg-[#0e1922] border border-[#1f3344] rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500">
+                        <button type="submit" class="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-xl shadow transition">
+                            Simpan
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Footer Buttons: Print Label & Scan Another -->
+                <div class="flex items-center justify-between pt-2 border-t border-[#1f3344]">
+                    <a :href="'{{ url('inventory') }}/' + scannedProduct?.id + '/print-label'" target="_blank" class="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-print"></i>
+                        <span>Cetak Label Stiker Barang Ini</span>
+                    </a>
+
+                    <button type="button" @click="resetScanView()" class="px-3.5 py-1.5 rounded-xl bg-[#162532] hover:bg-[#1f3344] text-xs font-bold text-slate-200 flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>Scan Barang Lain</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Warehouse App Controller & Barcode Listener -->
+    <script>
+        function warehouseApp() {
+            return {
+                sidebarOpen: true,
+                mobileSidebarOpen: false,
+                scannerOpen: false,
+                html5QrCode: null,
+                scannedProduct: null,
+                scanLoading: false,
+                scannerManualInput: '',
+                scannerError: '',
+
+                init() {
+                    // USB Hardware Barcode Gun Keystroke Buffer Listener
+                    let buffer = '';
+                    let lastKeyTime = Date.now();
+
+                    window.addEventListener('keydown', (e) => {
+                        // If typing inside an input/textarea, don't hijack unless it's an Enter from quick buffer
+                        const isInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName);
+                        const currentTime = Date.now();
+
+                        // Barcode scanners type very rapidly (under 50ms per key)
+                        if (currentTime - lastKeyTime > 100) {
+                            buffer = '';
+                        }
+                        lastKeyTime = currentTime;
+
+                        if (e.key === 'Enter') {
+                            if (buffer.length >= 3 && !isInput) {
+                                e.preventDefault();
+                                this.openScanner();
+                                this.lookupBarcode(buffer.trim());
+                                buffer = '';
+                            }
+                        } else if (e.key.length === 1) {
+                            buffer += e.key;
+                        }
+                    });
+                },
+
+                playBeep() {
+                    try {
+                        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.value = 920; // Scanner beep pitch
+                        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.14);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start();
+                        osc.stop(ctx.currentTime + 0.14);
+                    } catch(e) {}
+                },
+
+                openScanner() {
+                    this.scannerOpen = true;
+                    this.scannedProduct = null;
+                    this.scannerError = '';
+                    this.scannerManualInput = '';
+
+                    // Initialize Camera Scanner via html5-qrcode
+                    this.$nextTick(() => {
+                        if (!this.html5QrCode) {
+                            this.html5QrCode = new Html5Qrcode("qr-reader");
+                        }
+
+                        const config = { fps: 10, qrbox: { width: 250, height: 180 } };
+                        this.html5QrCode.start(
+                            { facingMode: "environment" },
+                            config,
+                            (decodedText) => {
+                                // Successful scan
+                                this.playBeep();
+                                this.lookupBarcode(decodedText);
+                            },
+                            (errorMessage) => {
+                                // Frame scan fail (normal when scanning empty air)
+                            }
+                        ).catch(err => {
+                            console.warn("Camera start failed, fallback to USB/manual mode", err);
+                            this.scannerError = "Kamera tidak aktif atau tidak diizinkan. Anda tetap bisa menggunakan Barcode Gun USB atau input manual.";
+                        });
+                    });
+                },
+
+                closeScanner() {
+                    this.scannerOpen = false;
+                    if (this.html5QrCode && this.html5QrCode.isScanning) {
+                        this.html5QrCode.stop().then(() => {
+                            this.html5QrCode.clear();
+                        }).catch(err => console.error(err));
+                    }
+                },
+
+                resetScanView() {
+                    this.scannedProduct = null;
+                    this.scannerError = '';
+                    this.scannerManualInput = '';
+                    if (this.html5QrCode && !this.html5QrCode.isScanning) {
+                        this.openScanner();
+                    }
+                },
+
+                lookupBarcode(code) {
+                    if (!code) return;
+                    this.scanLoading = true;
+                    this.scannerError = '';
+
+                    fetch(`{{ url('inventory/lookup') }}/${encodeURIComponent(code)}`, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Barang dengan SKU/Barcode "' + code + '" tidak ditemukan.');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        this.scanLoading = false;
+                        if (data.found) {
+                            this.scannedProduct = data.product;
+                            // Pause camera while reviewing product
+                            if (this.html5QrCode && this.html5QrCode.isScanning) {
+                                this.html5QrCode.stop().catch(e => console.error(e));
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        this.scanLoading = false;
+                        this.scannerError = err.message;
+                    });
+                }
+            }
+        }
+    </script>
 
     @stack('scripts')
 </body>

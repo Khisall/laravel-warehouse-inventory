@@ -120,6 +120,12 @@
                      class="absolute right-0 mt-2 w-56 rounded-xl bg-[#13202b] border border-[#1f3344] shadow-2xl py-2 z-50">
                     <div class="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Aksi Massal</div>
                     <button type="button"
+                            @click="document.getElementById('bulk-form-action').value = 'print_labels'; document.getElementById('bulk-form').submit();"
+                            class="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-[#192b3b] hover:text-emerald-400 flex items-center gap-2">
+                        <i class="fa-solid fa-barcode text-emerald-400"></i>
+                        <span>Cetak Label Barcode Terpilih</span>
+                    </button>
+                    <button type="button"
                             @click="document.getElementById('bulk-form-action').value = 'marketplace_list'; document.getElementById('bulk-form').submit();"
                             class="w-full text-left px-3 py-2 text-xs text-slate-300 hover:bg-[#192b3b] hover:text-emerald-400 flex items-center gap-2">
                         <i class="fa-solid fa-share-nodes text-emerald-400"></i>
@@ -372,6 +378,14 @@
                                 <!-- Row Actions -->
                                 <td class="py-3.5 px-4 text-center whitespace-nowrap">
                                     <div class="flex items-center justify-center space-x-1.5 opacity-80 group-hover:opacity-100 transition">
+                                        <!-- Print Barcode Label -->
+                                        <a href="{{ route('inventory.print-label', $product) }}"
+                                           target="_blank"
+                                           title="Cetak Label Barcode & QR"
+                                           class="w-7 h-7 rounded-lg bg-[#182835] hover:bg-amber-500/20 text-amber-400 border border-[#233b4e] flex items-center justify-center transition">
+                                            <i class="fa-solid fa-barcode text-xs"></i>
+                                        </a>
+
                                         <!-- Quick Stock Intake/Out -->
                                         <button type="button"
                                                 @click="openStock({{ $product->toJson() }}, 'in')"
@@ -574,6 +588,22 @@
                                placeholder="Contoh: Variation (4)"
                                class="w-full px-3 py-2 bg-[#0e1922] border border-[#1f3344] rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500">
                     </div>
+
+                    <!-- Batch Number & Expiry Date (FIFO) -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Batch / Lot Number</label>
+                        <input type="text"
+                               name="batch_number"
+                               placeholder="Contoh: BCH-2024-001"
+                               class="w-full px-3 py-2 bg-[#0e1922] border border-[#1f3344] rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500 font-mono">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Tanggal Kedaluwarsa (Jika ada)</label>
+                        <input type="date"
+                               name="expiry_date"
+                               class="w-full px-3 py-2 bg-[#0e1922] border border-[#1f3344] rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500">
+                    </div>
                 </div>
 
                 <!-- Image Upload -->
@@ -694,6 +724,16 @@
                     <div>
                         <label class="block text-xs font-semibold text-slate-300 mb-1">Variation Text</label>
                         <input type="text" name="variation_text" x-model="editItem.variation_text" class="w-full px-3 py-2 bg-[#0e1922] border border-[#1f3344] rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Batch / Lot Number</label>
+                        <input type="text" name="batch_number" x-model="editItem.batch_number" class="w-full px-3 py-2 bg-[#0e1922] border border-[#1f3344] rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500 font-mono">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Tanggal Kedaluwarsa</label>
+                        <input type="date" name="expiry_date" x-model="editItem.expiry_date" class="w-full px-3 py-2 bg-[#0e1922] border border-[#1f3344] rounded-xl text-sm text-white focus:outline-none focus:border-emerald-500">
                     </div>
                 </div>
 

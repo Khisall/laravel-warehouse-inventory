@@ -91,4 +91,41 @@ class InventoryTest extends TestCase
             'reference_no' => 'TEST-RCV-001',
         ]);
     }
+
+    public function test_can_lookup_sku_api(): void
+    {
+        $product = Product::first();
+        $this->assertNotNull($product);
+
+        $response = $this->get('/inventory/lookup/' . $product->sku);
+        $response->assertStatus(200);
+        $response->assertJson([
+            'found' => true,
+            'product' => [
+                'sku' => $product->sku,
+                'title' => $product->title,
+            ]
+        ]);
+    }
+
+    public function test_can_render_print_label(): void
+    {
+        $product = Product::first();
+        $this->assertNotNull($product);
+
+        $response = $this->get('/inventory/' . $product->id . '/print-label');
+        $response->assertStatus(200);
+        $response->assertSee($product->sku);
+    }
+
+    public function test_can_render_delivery_order(): void
+    {
+        $order = \App\Models\Order::first();
+        $this->assertNotNull($order);
+
+        $response = $this->get('/orders/' . $order->id . '/delivery-order');
+        $response->assertStatus(200);
+        $response->assertSee('SURAT JALAN');
+        $response->assertSee($order->order_number);
+    }
 }

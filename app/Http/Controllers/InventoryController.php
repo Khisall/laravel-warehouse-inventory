@@ -111,6 +111,8 @@ class InventoryController extends Controller
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|max:2048',
             'variation_text' => 'nullable|string|max:50',
+            'batch_number' => 'nullable|string|max:50',
+            'expiry_date' => 'nullable|date',
             'variations_count' => 'nullable|integer|min:0',
             'status_code' => 'required|string|max:20',
             'description' => 'nullable|string',
@@ -147,6 +149,8 @@ class InventoryController extends Controller
             'price' => $validated['price'],
             'image' => $imagePath,
             'variation_text' => $validated['variation_text'] ?? null,
+            'batch_number' => $validated['batch_number'] ?? null,
+            'expiry_date' => $validated['expiry_date'] ?? null,
             'variations_count' => $validated['variations_count'] ?? 0,
             'status_code' => strtoupper($validated['status_code']),
             'is_marketplace_listed' => $request->boolean('is_marketplace_listed'),
@@ -190,6 +194,8 @@ class InventoryController extends Controller
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|max:2048',
             'variation_text' => 'nullable|string|max:50',
+            'batch_number' => 'nullable|string|max:50',
+            'expiry_date' => 'nullable|date',
             'variations_count' => 'nullable|integer|min:0',
             'status_code' => 'required|string|max:20',
             'description' => 'nullable|string',
@@ -217,6 +223,8 @@ class InventoryController extends Controller
         $product->cost_price = $validated['cost_price'] ?? 0;
         $product->price = $validated['price'];
         $product->variation_text = $validated['variation_text'] ?? null;
+        $product->batch_number = $validated['batch_number'] ?? null;
+        $product->expiry_date = $validated['expiry_date'] ?? null;
         $product->variations_count = $validated['variations_count'] ?? 0;
         $product->status_code = strtoupper($validated['status_code']);
         $product->is_marketplace_listed = $request->boolean('is_marketplace_listed');
@@ -313,6 +321,10 @@ class InventoryController extends Controller
             return redirect()->back()->with('error', 'Silakan centang minimal satu barang untuk aksi massal.');
         }
 
+        if ($action === 'print_labels') {
+            return redirect()->route('inventory.print-bulk-labels', ['ids' => $ids]);
+        }
+
         if ($action === 'delete') {
             Product::whereIn('id', $ids)->delete();
             return redirect()->route('inventory.index')->with('success', count($ids) . ' barang berhasil dihapus sekaligus.');
@@ -393,4 +405,71 @@ class InventoryController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    /**
+     * Print barcode / QR code label for a single product.
+     */
+    public function printLabel(Product $product)
+    {
+        $products = collect([$product->load(['category', 'warehouse'])]);
+        return view('inventory.print-labels', compact('products'));
+    }
+
+    /**
+     * Print barcode / QR code labels for multiple products or selected sheet.
+     */
+    public function printBulkLabels(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (!empty($ids)) {
+            $products = Product::whereIn('id', $ids)->with(['category', 'warehouse'])->get();
+        } else {
+            $products = Product::with(['category', 'warehouse'])->limit(30)->get();
+        }
+
+        return view('inventory.print-labels', compact('products'));
+    }
+
+    /**
+     * Look up product by SKU or Barcode (used by scanner).
+     */
+    public function lookupSku($sku)
+    {
+        $sku = trim($sku);
+        $product = Product::where('sku', $sku)
+            ->orWhere('sku', strtoupper($sku))
+            ->orWhere('batch_number', $sku)
+            ->with(['category', 'warehouse'])
+            ->first();
+
+        if (!$product) {
+            return response()->json([
+                'found' => false,
+                'message' => 'Barang dengan SKU/Barcode "' . $sku . '" tidak ditemukan di database gudang.'
+            ], 404);
+        }
+
+        return response()->json([
+            'found' => true,
+            'product' => [
+                'id' => $product->id,
+                'sku' => $product->sku,
+                'title' => $product->title,
+                'category' => $product->category?->name ?? 'Uncategorized',
+                'quantity' => $product->quantity,
+                'min_stock' => $product->min_stock,
+                'unit' => $product->unit,
+                'warehouse_location' => $product->warehouse_location,
+                'price' => $product->price,
+                'formatted_price' => $product->formatted_price,
+                'cost_price' => $product->cost_price,
+                'status' => $product->status,
+                'status_code' => $product->status_code,
+                'batch_number' => $product->batch_number ?? '-',
+                'expiry_date' => $product->expiry_date ? $product->expiry_date->format('d M Y') : '-',
+                'image_url' => $product->image_url,
+            ]
+        ]);
+    }
 }
+

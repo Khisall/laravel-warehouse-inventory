@@ -18,6 +18,8 @@ class StockMovement extends Model
         'stock_before',
         'stock_after',
         'reference_no',
+        'batch_number',
+        'expiry_date',
         'notes',
         'created_by',
     ];

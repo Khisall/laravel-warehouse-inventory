@@ -26,6 +26,8 @@ class Product extends Model
         'price',
         'image',
         'variation_text',
+        'batch_number',
+        'expiry_date',
         'variations_count',
         'status_code',
         'status',
@@ -40,6 +42,7 @@ class Product extends Model
         'cost_price' => 'decimal:2',
         'price' => 'decimal:2',
         'variations_count' => 'integer',
+        'expiry_date' => 'date',
         'is_marketplace_listed' => 'boolean',
         'last_modified' => 'datetime',
     ];

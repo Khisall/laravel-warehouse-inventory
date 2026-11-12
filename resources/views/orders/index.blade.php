@@ -106,11 +106,20 @@
                             </td>
 
                             <td class="py-3 px-4 text-center whitespace-nowrap">
-                                <button type="button"
-                                        @click="openStatus({{ $o->toJson() }})"
-                                        class="px-2.5 py-1 rounded-lg bg-[#182835] hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-[#233b4e] transition">
-                                    Update Status
-                                </button>
+                                <div class="flex items-center justify-center space-x-1.5">
+                                    <a href="{{ route('orders.delivery-order', $o) }}"
+                                       target="_blank"
+                                       title="Cetak Surat Jalan & Packing Slip"
+                                       class="px-2.5 py-1 rounded-lg bg-[#182835] hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-[#233b4e] flex items-center gap-1.5 transition">
+                                        <i class="fa-solid fa-file-invoice"></i>
+                                        <span>Surat Jalan</span>
+                                    </a>
+                                    <button type="button"
+                                            @click="openStatus({{ $o->toJson() }})"
+                                            class="px-2.5 py-1 rounded-lg bg-[#182835] hover:bg-cyan-500/20 text-cyan-400 text-xs font-bold border border-[#233b4e] transition">
+                                        Update Status
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     @empty
