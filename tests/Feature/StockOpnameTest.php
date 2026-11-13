@@ -77,6 +77,10 @@ class StockOpnameTest extends TestCase
                 'price' => 150000,
             ]
         );
+        $this->product->update(['quantity' => 50]);
+
+        // Clean up test opnames to avoid unique constraint duplicates
+        StockOpname::where('opname_number', 'like', 'OPN-TEST%')->delete();
     }
 
     public function test_guest_cannot_access_opname(): void
@@ -94,19 +98,21 @@ class StockOpnameTest extends TestCase
 
     public function test_user_can_create_new_opname_session(): void
     {
+        $uniqueTitle = 'Audit Akhir Pekan Test ' . uniqid();
+
         $response = $this->actingAs($this->manager)->post(route('opname.store'), [
-            'title' => 'Audit Akhir Pekan Test',
+            'title' => $uniqueTitle,
             'warehouse_id' => $this->warehouse->id,
             'category_id' => $this->category->id,
             'notes' => 'Catatan uji otomatis',
         ]);
 
         $this->assertDatabaseHas('stock_opnames', [
-            'title' => 'Audit Akhir Pekan Test',
+            'title' => $uniqueTitle,
             'status' => 'in_progress',
         ]);
 
-        $opname = StockOpname::where('title', 'Audit Akhir Pekan Test')->first();
+        $opname = StockOpname::where('title', $uniqueTitle)->first();
         $this->assertNotNull($opname);
         $response->assertRedirect(route('opname.show', $opname->id));
 
@@ -121,7 +127,7 @@ class StockOpnameTest extends TestCase
     public function test_barcode_scan_increments_physical_stock(): void
     {
         $opname = StockOpname::create([
-            'opname_number' => 'OPN-TEST-SCAN-01',
+            'opname_number' => 'OPN-TEST-SCAN-' . uniqid(),
             'title' => 'Test Barcode Scan',
             'status' => 'in_progress',
             'created_by' => $this->staff->id,
@@ -173,7 +179,7 @@ class StockOpnameTest extends TestCase
         $this->product->update(['quantity' => 50]);
 
         $opname = StockOpname::create([
-            'opname_number' => 'OPN-TEST-RECON-01',
+            'opname_number' => 'OPN-TEST-RECON-' . uniqid(),
             'title' => 'Test Reconcile Session',
             'status' => 'in_progress',
             'created_by' => $this->manager->id,
@@ -217,7 +223,7 @@ class StockOpnameTest extends TestCase
     public function test_staff_cannot_reconcile_stock_opname(): void
     {
         $opname = StockOpname::create([
-            'opname_number' => 'OPN-TEST-STAFF-RECON',
+            'opname_number' => 'OPN-TEST-STAFF-' . uniqid(),
             'title' => 'Test Staff Reconcile Block',
             'status' => 'in_progress',
             'created_by' => $this->staff->id,
@@ -233,7 +239,7 @@ class StockOpnameTest extends TestCase
     public function test_berita_acara_report_renders(): void
     {
         $opname = StockOpname::create([
-            'opname_number' => 'OPN-TEST-REPORT-01',
+            'opname_number' => 'OPN-TEST-REP-' . uniqid(),
             'title' => 'Test Report Document',
             'status' => 'completed',
             'created_by' => $this->admin->id,

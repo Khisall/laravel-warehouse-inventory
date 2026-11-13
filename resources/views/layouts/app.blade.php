@@ -264,6 +264,33 @@
                                 </div>
                                 <span :class="sidebarOpen ? 'block' : 'hidden'">Stock Opname</span>
                             </a>
+
+                            <!-- Purchase Orders (PO) -->
+                            <a href="{{ route('purchase-orders.index') }}"
+                               class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition group {{ request()->routeIs('purchase-orders.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532] hover:text-slate-200' }}">
+                                <div class="w-5 text-center mr-3 text-base {{ request()->routeIs('purchase-orders.*') ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400' }}">
+                                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                                </div>
+                                <span :class="sidebarOpen ? 'block' : 'hidden'">Purchase Orders</span>
+                            </a>
+
+                            <!-- Goods Receipts (Inbound) -->
+                            <a href="{{ route('goods-receipts.index') }}"
+                               class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition group {{ request()->routeIs('goods-receipts.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532] hover:text-slate-200' }}">
+                                <div class="w-5 text-center mr-3 text-base {{ request()->routeIs('goods-receipts.*') ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400' }}">
+                                    <i class="fa-solid fa-dolly"></i>
+                                </div>
+                                <span :class="sidebarOpen ? 'block' : 'hidden'">Terima Barang</span>
+                            </a>
+
+                            <!-- Suppliers -->
+                            <a href="{{ route('suppliers.index') }}"
+                               class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition group {{ request()->routeIs('suppliers.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532] hover:text-slate-200' }}">
+                                <div class="w-5 text-center mr-3 text-base {{ request()->routeIs('suppliers.*') ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400' }}">
+                                    <i class="fa-solid fa-handshake"></i>
+                                </div>
+                                <span :class="sidebarOpen ? 'block' : 'hidden'">Pemasok / Vendor</span>
+                            </a>
                         @endif
 
                         <!-- Marketplace -->
@@ -406,6 +433,15 @@
                             @if(in_array(auth()->user()?->role, ['super_admin', 'warehouse_manager', 'warehouse_staff']))
                                 <a href="{{ route('opname.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('opname.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
                                     <i class="fa-solid fa-clipboard-check w-6 text-emerald-400"></i> Stock Opname
+                                </a>
+                                <a href="{{ route('purchase-orders.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('purchase-orders.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
+                                    <i class="fa-solid fa-file-invoice-dollar w-6 text-emerald-400"></i> Purchase Orders
+                                </a>
+                                <a href="{{ route('goods-receipts.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('goods-receipts.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
+                                    <i class="fa-solid fa-dolly w-6 text-emerald-400"></i> Terima Barang
+                                </a>
+                                <a href="{{ route('suppliers.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('suppliers.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
+                                    <i class="fa-solid fa-handshake w-6 text-emerald-400"></i> Pemasok / Vendor
                                 </a>
                             @endif
                             <a href="{{ route('marketplace.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('marketplace.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">

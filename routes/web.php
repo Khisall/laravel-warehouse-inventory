@@ -1,13 +1,16 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\GoodsReceiptController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShippingController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\StockOpnameController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
 use Illuminate\Support\Facades\Route;
@@ -80,6 +83,33 @@ Route::middleware('auth')->group(function () {
         Route::post('/', [OrderController::class, 'store'])->name('store');
         Route::get('/{order}/delivery-order', [OrderController::class, 'deliveryOrder'])->name('delivery-order');
         Route::put('/{order}/status', [OrderController::class, 'updateStatus'])->name('update-status');
+    });
+
+    // Suppliers / Vendors Management
+    Route::prefix('suppliers')->name('suppliers.')->group(function () {
+        Route::get('/', [SupplierController::class, 'index'])->name('index');
+        Route::post('/', [SupplierController::class, 'store'])->name('store');
+        Route::put('/{supplier}', [SupplierController::class, 'update'])->name('update');
+        Route::delete('/{supplier}', [SupplierController::class, 'destroy'])->name('destroy');
+    });
+
+    // Purchase Orders (PO / Inbound Procurement)
+    Route::prefix('purchase-orders')->name('purchase-orders.')->middleware('role:super_admin,warehouse_manager,warehouse_staff')->group(function () {
+        Route::get('/', [PurchaseOrderController::class, 'index'])->name('index');
+        Route::get('/create', [PurchaseOrderController::class, 'create'])->name('create');
+        Route::post('/', [PurchaseOrderController::class, 'store'])->name('store');
+        Route::get('/{purchaseOrder}', [PurchaseOrderController::class, 'show'])->name('show');
+        Route::post('/{purchaseOrder}/cancel', [PurchaseOrderController::class, 'cancel'])->name('cancel');
+        Route::get('/{purchaseOrder}/print', [PurchaseOrderController::class, 'printPo'])->name('print');
+    });
+
+    // Goods Receipts (Inbound Receiving & Putaway)
+    Route::prefix('goods-receipts')->name('goods-receipts.')->middleware('role:super_admin,warehouse_manager,warehouse_staff')->group(function () {
+        Route::get('/', [GoodsReceiptController::class, 'index'])->name('index');
+        Route::get('/receive/{purchaseOrder}', [GoodsReceiptController::class, 'create'])->name('create');
+        Route::post('/receive/{purchaseOrder}', [GoodsReceiptController::class, 'store'])->name('store');
+        Route::get('/{goodsReceipt}', [GoodsReceiptController::class, 'show'])->name('show');
+        Route::get('/{goodsReceipt}/print', [GoodsReceiptController::class, 'printGrn'])->name('print');
     });
 
     // Shipping
