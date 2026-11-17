@@ -52,30 +52,6 @@ class AuthController extends Controller
     }
 
     /**
-     * Quick demo switch for easy testing between roles.
-     */
-    public function demoLogin(Request $request, $role)
-    {
-        $allowedRoles = ['super_admin', 'warehouse_manager', 'warehouse_staff', 'sales_staff'];
-
-        if (!in_array($role, $allowedRoles)) {
-            abort(404);
-        }
-
-        $user = User::where('role', $role)->first();
-
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'Pengguna demo untuk peran ' . $role . ' tidak ditemukan.');
-        }
-
-        Auth::login($user);
-        $user->update(['last_login_at' => now()]);
-        $request->session()->regenerate();
-
-        return redirect()->route('inventory.index')->with('success', 'Anda sekarang masuk sebagai ' . $user->name . ' (' . $user->role_badge_label . ')');
-    }
-
-    /**
      * Log out the authenticated user.
      */
     public function logout(Request $request)

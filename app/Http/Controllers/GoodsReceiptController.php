@@ -74,10 +74,13 @@ class GoodsReceiptController extends Controller
             'items.*.shelf_location' => 'nullable|string|max:50',
         ]);
 
-        // Auto-generate GRN Number: GRN-YYYYMMDD-XXXX
+        // Auto-generate GRN Number: GRN-YYYYMMDD-XXXX (collision-proof)
         $datePrefix = 'GRN-' . date('Ymd');
-        $countToday = GoodsReceipt::whereDate('created_at', Carbon::today())->count() + 1;
-        $receiptNumber = $datePrefix . '-' . str_pad($countToday, 4, '0', STR_PAD_LEFT);
+        $countToday = GoodsReceipt::where('receipt_number', 'like', $datePrefix . '-%')->count() + 1;
+        do {
+            $receiptNumber = $datePrefix . '-' . str_pad($countToday, 4, '0', STR_PAD_LEFT);
+            $countToday++;
+        } while (GoodsReceipt::where('receipt_number', $receiptNumber)->exists());
 
         DB::beginTransaction();
         try {

@@ -100,10 +100,13 @@ class PurchaseOrderController extends Controller
             'items.*.notes' => 'nullable|string|max:100',
         ]);
 
-        // Auto-generate PO Number: PO-YYYYMMDD-XXXX
+        // Auto-generate PO Number: PO-YYYYMMDD-XXXX (collision-proof)
         $datePrefix = 'PO-' . date('Ymd');
-        $countToday = PurchaseOrder::whereDate('created_at', Carbon::today())->count() + 1;
-        $poNumber = $datePrefix . '-' . str_pad($countToday, 4, '0', STR_PAD_LEFT);
+        $countToday = PurchaseOrder::where('po_number', 'like', $datePrefix . '-%')->count() + 1;
+        do {
+            $poNumber = $datePrefix . '-' . str_pad($countToday, 4, '0', STR_PAD_LEFT);
+            $countToday++;
+        } while (PurchaseOrder::where('po_number', $poNumber)->exists());
 
         DB::beginTransaction();
         try {

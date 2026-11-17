@@ -39,7 +39,7 @@
             <h1 class="text-2xl font-extrabold text-white tracking-wider uppercase flex items-center justify-center gap-1.5">
                 <span class="text-emerald-400">INVENTORY</span>
             </h1>
-            <p class="text-xs text-slate-400">Sistem Pergudangan & Manajemen Stok Multi-User</p>
+            <p class="text-xs text-slate-400">Sistem Pergudangan &amp; Manajemen Stok Multi-User</p>
         </div>
 
         <!-- Login Card -->
@@ -65,7 +65,7 @@
 
                 <!-- Email Input -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Alamat Email Staf</label>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Alamat Email Pengguna</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-500">
                             <i class="fa-solid fa-envelope text-xs"></i>
@@ -73,8 +73,9 @@
                         <input type="email"
                                name="email"
                                required
-                               value="{{ old('email', 'admin@inventory.com') }}"
-                               placeholder="nama@inventory.com"
+                               autocomplete="email"
+                               value="{{ old('email') }}"
+                               placeholder="nama@perusahaan.com"
                                class="w-full pl-10 pr-4 py-2.5 bg-[#0e1922] border border-[#1f3344] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40">
                     </div>
                     @error('email')
@@ -84,7 +85,7 @@
 
                 <!-- Password Input -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 mb-1">Kata Sandi</label>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1.5">Kata Sandi (Password)</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-500">
                             <i class="fa-solid fa-lock text-xs"></i>
@@ -92,8 +93,8 @@
                         <input :type="showPass ? 'text' : 'password'"
                                name="password"
                                required
-                               value="password123"
-                               placeholder="••••••••"
+                               autocomplete="current-password"
+                               placeholder="Masukkan kata sandi Anda"
                                class="w-full pl-10 pr-10 py-2.5 bg-[#0e1922] border border-[#1f3344] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40">
                         <button type="button" @click="showPass = !showPass" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300">
                             <i :class="showPass ? 'fa-eye-slash' : 'fa-eye'" class="fa-solid text-xs"></i>
@@ -102,53 +103,34 @@
                 </div>
 
                 <!-- Remember Me -->
-                <div class="flex items-center justify-between text-xs">
+                <div class="flex items-center justify-between text-xs pt-1">
                     <label class="flex items-center space-x-2 cursor-pointer">
                         <input type="checkbox" name="remember" class="w-4 h-4 rounded bg-[#0e1922] border-[#294255] text-emerald-500 focus:ring-0">
-                        <span class="text-slate-400">Ingat Saya</span>
+                        <span class="text-slate-400">Ingat Saya di Perangkat Ini</span>
                     </label>
-                    <span class="text-slate-500">Default: password123</span>
                 </div>
 
                 <!-- Submit Button -->
                 <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 transition flex items-center justify-center gap-2">
                     <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
-                    <span>Masuk ke Sistem</span>
+                    <span>Masuk ke Akun</span>
                 </button>
             </form>
 
-            <!-- 1-Click Role Switcher for Testing -->
-            <div class="pt-4 border-t border-[#1f3344] space-y-2">
-                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">
-                    Coba Akses Cepat Berdasarkan Peran (1-Click Demo)
-                </div>
-                <div class="grid grid-cols-2 gap-2 text-xs">
-                    <a href="{{ route('auth.demo', 'super_admin') }}" class="p-2 rounded-xl bg-[#0e1922] hover:bg-emerald-500/10 border border-[#1f3344] hover:border-emerald-500/40 text-slate-300 hover:text-emerald-400 transition text-center flex flex-col items-center">
-                        <span class="font-bold text-emerald-400"><i class="fa-solid fa-crown mr-1"></i> Owner</span>
-                        <span class="text-[10px] text-slate-500">Akses Penuh Finansial</span>
-                    </a>
-
-                    <a href="{{ route('auth.demo', 'warehouse_manager') }}" class="p-2 rounded-xl bg-[#0e1922] hover:bg-cyan-500/10 border border-[#1f3344] hover:border-cyan-500/40 text-slate-300 hover:text-cyan-400 transition text-center flex flex-col items-center">
-                        <span class="font-bold text-cyan-400"><i class="fa-solid fa-user-tie mr-1"></i> Ka. Gudang</span>
-                        <span class="text-[10px] text-slate-500">Supervisor Stok</span>
-                    </a>
-
-                    <a href="{{ route('auth.demo', 'warehouse_staff') }}" class="p-2 rounded-xl bg-[#0e1922] hover:bg-amber-500/10 border border-[#1f3344] hover:border-amber-500/40 text-slate-300 hover:text-amber-400 transition text-center flex flex-col items-center">
-                        <span class="font-bold text-amber-400"><i class="fa-solid fa-boxes-packing mr-1"></i> Operator</span>
-                        <span class="text-[10px] text-slate-500">Harga Modal Rahasia</span>
-                    </a>
-
-                    <a href="{{ route('auth.demo', 'sales_staff') }}" class="p-2 rounded-xl bg-[#0e1922] hover:bg-purple-500/10 border border-[#1f3344] hover:border-purple-500/40 text-slate-300 hover:text-purple-400 transition text-center flex flex-col items-center">
-                        <span class="font-bold text-purple-400"><i class="fa-solid fa-shop mr-1"></i> Sales</span>
-                        <span class="text-[10px] text-slate-500">Pesanan & Resi</span>
-                    </a>
-                </div>
+            <div class="pt-3 border-t border-[#1f3344]/80 text-center">
+                <p class="text-[11px] text-slate-400">
+                    <i class="fa-solid fa-shield-halved text-emerald-400 mr-1"></i>
+                    Akses aman terlindungi otentikasi akun &amp; kontrol peran (RBAC).
+                </p>
+                <p class="text-[10px] text-slate-500 mt-1">
+                    Jika Anda lupa kata sandi atau membutuhkan akses baru, silakan hubungi <strong>Super Admin</strong>.
+                </p>
             </div>
 
         </div>
 
         <div class="text-center text-xs text-slate-500">
-            INVENTORY WMS &copy; {{ date('Y') }} &bull; Laravel 12 &bull; Multi-Role Engine
+            INVENTORY WMS &copy; {{ date('Y') }} &bull; PT. INVENTORY LOGISTIK NUSANTARA
         </div>
 
     </div>

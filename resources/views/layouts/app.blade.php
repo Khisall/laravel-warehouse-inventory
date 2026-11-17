@@ -283,21 +283,7 @@
                             </span>
                         </div>
 
-                        <div class="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">Coba Demo Switch Peran:</div>
-                        <a href="{{ route('auth.demo', 'super_admin') }}" class="block px-3.5 py-1.5 text-slate-300 hover:bg-[#162532] hover:text-emerald-400">
-                            👑 Owner / Super Admin
-                        </a>
-                        <a href="{{ route('auth.demo', 'warehouse_manager') }}" class="block px-3.5 py-1.5 text-slate-300 hover:bg-[#162532] hover:text-cyan-400">
-                            🏭 Kepala Gudang
-                        </a>
-                        <a href="{{ route('auth.demo', 'warehouse_staff') }}" class="block px-3.5 py-1.5 text-slate-300 hover:bg-[#162532] hover:text-amber-400">
-                            📦 Operator Gudang
-                        </a>
-                        <a href="{{ route('auth.demo', 'sales_staff') }}" class="block px-3.5 py-1.5 text-slate-300 hover:bg-[#162532] hover:text-purple-400">
-                            🛒 Admin Penjualan
-                        </a>
 
-                        <div class="border-t border-[#1f3344] my-1"></div>
                         @if(auth()->user()?->canManageUsers())
                             <a href="{{ route('users.index') }}" class="block px-3.5 py-2 text-slate-300 hover:bg-[#162532] hover:text-emerald-400 font-semibold">
                                 <i class="fa-solid fa-users-gear mr-1.5 text-emerald-400"></i> Kelola Tim & Hak Akses

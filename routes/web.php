@@ -24,7 +24,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-Route::get('/auth/demo/{role}', [AuthController::class, 'demoLogin'])->name('auth.demo');
 
 // Root redirect
 Route::get('/', function () {

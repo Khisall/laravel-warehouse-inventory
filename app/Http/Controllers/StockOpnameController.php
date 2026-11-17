@@ -69,10 +69,13 @@ class StockOpnameController extends Controller
             'notes' => 'nullable|string|max:500',
         ]);
 
-        // Generate unique Opname Number: OPN-YYYYMMDD-XXXX
+        // Generate unique Opname Number: OPN-YYYYMMDD-XXXX (collision-proof)
         $datePrefix = 'OPN-' . date('Ymd');
-        $countToday = StockOpname::whereDate('created_at', Carbon::today())->count() + 1;
-        $opnameNumber = $datePrefix . '-' . str_pad($countToday, 4, '0', STR_PAD_LEFT);
+        $countToday = StockOpname::where('opname_number', 'like', $datePrefix . '-%')->count() + 1;
+        do {
+            $opnameNumber = $datePrefix . '-' . str_pad($countToday, 4, '0', STR_PAD_LEFT);
+            $countToday++;
+        } while (StockOpname::where('opname_number', $opnameNumber)->exists());
 
         // Fetch products matching the scope
         $productQuery = Product::query();
