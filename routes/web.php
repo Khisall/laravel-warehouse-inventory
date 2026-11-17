@@ -7,8 +7,10 @@ use App\Http\Controllers\GoodsReceiptController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProductBatchController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ScannerController;
 use App\Http\Controllers\ShippingController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\StockOpnameController;
@@ -85,6 +87,23 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [MarketplaceController::class, 'index'])->name('index');
         Route::post('/', [MarketplaceController::class, 'store'])->name('store');
         Route::post('/sync-all', [MarketplaceController::class, 'syncAll'])->name('sync-all');
+        Route::post('/simulate-order', [MarketplaceController::class, 'simulateOrder'])->name('simulate-order');
+        Route::post('/{listing}/buffer', [MarketplaceController::class, 'updateBuffer'])->name('update-buffer');
+    });
+
+    // Product Batches & FEFO Picking System
+    Route::prefix('batches')->name('batches.')->middleware('role:super_admin,warehouse_manager,warehouse_staff')->group(function () {
+        Route::get('/', [ProductBatchController::class, 'index'])->name('index');
+        Route::post('/', [ProductBatchController::class, 'store'])->name('store');
+        Route::post('/{batch}/toggle-quarantine', [ProductBatchController::class, 'toggleQuarantine'])->name('toggle-quarantine');
+        Route::get('/fefo-recommend', [ProductBatchController::class, 'fefoRecommendation'])->name('fefo-recommend');
+    });
+
+    // Mobile Barcode & QR Camera Scanner
+    Route::prefix('scanner')->name('scanner.')->group(function () {
+        Route::get('/', [ScannerController::class, 'index'])->name('index');
+        Route::get('/lookup', [ScannerController::class, 'apiLookup'])->name('lookup');
+        Route::post('/quick-adjust', [ScannerController::class, 'quickAdjust'])->name('quick-adjust');
     });
 
     // Orders

@@ -94,6 +94,19 @@ class Product extends Model
         return $this->hasMany(StockTransferItem::class, 'source_product_id');
     }
 
+    public function batches(): HasMany
+    {
+        return $this->hasMany(ProductBatch::class)->orderBy('expiry_date', 'asc');
+    }
+
+    public function activeBatches(): HasMany
+    {
+        return $this->hasMany(ProductBatch::class)
+            ->where('status', 'active')
+            ->where('current_quantity', '>', 0)
+            ->orderBy('expiry_date', 'asc');
+    }
+
     public function getImageUrlAttribute(): string
     {
         if ($this->image) {

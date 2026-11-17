@@ -334,6 +334,15 @@
                             <span :class="sidebarOpen ? 'block' : 'hidden'">Dashboard</span>
                         </a>
 
+                        <!-- Mobile Scanner -->
+                        <a href="{{ route('scanner.index') }}"
+                           class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition group {{ request()->routeIs('scanner.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532] hover:text-slate-200' }}">
+                            <div class="w-5 text-center mr-3 text-base {{ request()->routeIs('scanner.*') ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400' }}">
+                                <i class="fa-solid fa-camera"></i>
+                            </div>
+                            <span :class="sidebarOpen ? 'block' : 'hidden'">Mobile Scanner</span>
+                        </a>
+
                         <!-- Alerts / Peringatan Stok & Expired -->
                         <a href="{{ route('alerts.index') }}"
                            class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition group {{ request()->routeIs('alerts.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532] hover:text-slate-200' }}">
@@ -395,6 +404,15 @@
                                     <i class="fa-solid fa-truck-ramp-box"></i>
                                 </div>
                                 <span :class="sidebarOpen ? 'block' : 'hidden'">Transfer Gudang</span>
+                            </a>
+
+                            <!-- Product Batches & FEFO -->
+                            <a href="{{ route('batches.index') }}"
+                               class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition group {{ request()->routeIs('batches.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532] hover:text-slate-200' }}">
+                                <div class="w-5 text-center mr-3 text-base {{ request()->routeIs('batches.*') ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400' }}">
+                                    <i class="fa-solid fa-boxes-packing"></i>
+                                </div>
+                                <span :class="sidebarOpen ? 'block' : 'hidden'">Batch &amp; FEFO</span>
                             </a>
 
                             <!-- Suppliers -->
@@ -550,6 +568,9 @@
                             <a href="{{ route('inventory.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('inventory.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
                                 <i class="fa-solid fa-box w-6 text-emerald-400"></i> Dashboard
                             </a>
+                            <a href="{{ route('scanner.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('scanner.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
+                                <i class="fa-solid fa-camera w-6 text-emerald-400"></i> Mobile Scanner
+                            </a>
                             <a href="{{ route('alerts.index') }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('alerts.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
                                 <div class="flex items-center">
                                     <i class="fa-solid fa-triangle-exclamation w-6 text-amber-400"></i> Peringatan Stok
@@ -575,6 +596,9 @@
                                 </a>
                                 <a href="{{ route('transfers.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('transfers.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
                                     <i class="fa-solid fa-truck-ramp-box w-6 text-emerald-400"></i> Transfer Gudang
+                                </a>
+                                <a href="{{ route('batches.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('batches.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
+                                    <i class="fa-solid fa-boxes-packing w-6 text-emerald-400"></i> Batch &amp; FEFO
                                 </a>
                                 <a href="{{ route('suppliers.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('suppliers.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
                                     <i class="fa-solid fa-handshake w-6 text-emerald-400"></i> Pemasok / Vendor
