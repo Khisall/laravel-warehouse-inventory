@@ -159,13 +159,101 @@
                     </button>
                 </form>
 
-                <!-- Notifications with Badge -->
-                <a href="{{ route('activity.index') }}" title="Notifikasi Mutasi" class="relative p-2 text-slate-400 hover:text-slate-200 transition">
-                    <i class="fa-regular fa-bell text-lg"></i>
-                    <span class="absolute top-1 right-1 w-4 h-4 rounded-full bg-emerald-500 text-[10px] font-bold text-slate-950 flex items-center justify-center">
-                        3
-                    </span>
-                </a>
+                <!-- Interactive Notifications & Alert Dropdown -->
+                <div class="relative" x-data="{ alertOpen: false }" @click.away="alertOpen = false">
+                    <button type="button"
+                            @click="alertOpen = !alertOpen"
+                            title="Pusat Peringatan & Notifikasi"
+                            class="relative p-2 text-slate-400 hover:text-slate-200 transition focus:outline-none">
+                        <i class="fa-solid fa-bell text-lg {{ ($globalAlerts['total'] ?? 0) > 0 ? 'text-amber-400' : 'text-slate-400' }}"></i>
+                        @if(($globalAlerts['total'] ?? 0) > 0)
+                            <span class="absolute top-1 right-1 w-4 h-4 rounded-full bg-rose-500 text-[10px] font-bold text-white flex items-center justify-center animate-pulse">
+                                {{ ($globalAlerts['total'] ?? 0) > 99 ? '99+' : $globalAlerts['total'] }}
+                            </span>
+                        @endif
+                    </button>
+
+                    <!-- Alert Dropdown Menu -->
+                    <div x-show="alertOpen"
+                         x-transition
+                         style="display: none;"
+                         class="absolute right-0 top-12 w-80 md:w-96 rounded-2xl bg-[#13202b] border border-[#1f3344] shadow-2xl py-3 z-50 text-xs text-slate-200">
+                        <div class="px-4 pb-2.5 border-b border-[#1f3344] flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
+                                <span class="font-bold text-white text-sm">Pusat Peringatan</span>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 text-[10px] font-bold font-mono">
+                                {{ $globalAlerts['total'] ?? 0 }} Peringatan Aktif
+                            </span>
+                        </div>
+
+                        <!-- Quick Badges -->
+                        <div class="grid grid-cols-2 gap-2 px-4 py-2.5 border-b border-[#1f3344] bg-[#0e1821]/50">
+                            <a href="{{ route('alerts.index', ['tab' => 'stock']) }}" class="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 transition">
+                                <div class="text-[10px] text-amber-400 font-semibold uppercase tracking-wider">Stok Kritis / Habis</div>
+                                <div class="text-base font-extrabold text-white mt-0.5">
+                                    {{ ($globalAlerts['out_of_stock'] ?? 0) + ($globalAlerts['low_stock'] ?? 0) }} SKU
+                                </div>
+                            </a>
+                            <a href="{{ route('alerts.index', ['tab' => 'expiry']) }}" class="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 transition">
+                                <div class="text-[10px] text-rose-400 font-semibold uppercase tracking-wider">Expired / Kritis</div>
+                                <div class="text-base font-extrabold text-white mt-0.5">
+                                    {{ ($globalAlerts['expired'] ?? 0) + ($globalAlerts['expiring_soon'] ?? 0) }} SKU
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Urgent Items List -->
+                        <div class="max-h-64 overflow-y-auto divide-y divide-[#1f3344]/50 px-2 py-1">
+                            @if(!empty($globalAlerts['urgent_stock']) && $globalAlerts['urgent_stock']->count() > 0)
+                                <div class="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Stok Perlu Reorder:</div>
+                                @foreach($globalAlerts['urgent_stock'] as $uItem)
+                                    <a href="{{ route('alerts.index', ['tab' => 'stock', 'search' => $uItem->sku]) }}" class="block p-2 rounded-lg hover:bg-[#162532] transition">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-mono font-bold text-amber-400">{{ $uItem->sku }}</span>
+                                            <span class="font-mono text-[11px] {{ $uItem->quantity <= 0 ? 'text-rose-400 font-bold' : 'text-amber-400' }}">
+                                                Sisa: {{ $uItem->quantity }} {{ $uItem->unit }}
+                                            </span>
+                                        </div>
+                                        <div class="text-white text-xs truncate">{{ $uItem->title }}</div>
+                                    </a>
+                                @endforeach
+                            @endif
+
+                            @if(!empty($globalAlerts['urgent_expiry']) && $globalAlerts['urgent_expiry']->count() > 0)
+                                <div class="px-2 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mendekati Kadaluarsa:</div>
+                                @foreach($globalAlerts['urgent_expiry'] as $eItem)
+                                    <a href="{{ route('alerts.index', ['tab' => 'expiry', 'search' => $eItem->sku]) }}" class="block p-2 rounded-lg hover:bg-[#162532] transition">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-mono font-bold text-cyan-400">{{ $eItem->sku }}</span>
+                                            <span class="font-mono text-[11px] {{ $eItem->days_until_expiry < 0 ? 'text-rose-400 font-bold' : 'text-amber-400' }}">
+                                                {{ $eItem->days_until_expiry < 0 ? 'Expired' : ($eItem->days_until_expiry . ' hari lagi') }}
+                                            </span>
+                                        </div>
+                                        <div class="text-white text-xs truncate">{{ $eItem->title }}</div>
+                                    </a>
+                                @endforeach
+                            @endif
+
+                            @if(($globalAlerts['total'] ?? 0) === 0)
+                                <div class="py-6 text-center text-slate-500">
+                                    <i class="fa-solid fa-circle-check text-2xl text-emerald-400 mb-1.5"></i>
+                                    <p class="text-xs font-semibold text-slate-300">Semua Stok Normal & Aman</p>
+                                    <p class="text-[11px] text-slate-500">Tidak ada barang kritis saat ini.</p>
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Footer Link -->
+                        <div class="px-4 pt-2.5 border-t border-[#1f3344] mt-1 text-center">
+                            <a href="{{ route('alerts.index') }}" class="w-full py-1.5 px-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs flex items-center justify-center gap-1.5 transition">
+                                <span>Buka Seluruh Pusat Peringatan</span>
+                                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- User Profile Avatar & Dropdown -->
                 <div class="relative flex items-center space-x-3 pl-2 border-l border-[#1f3344]" x-data="{ profileOpen: false }" @click.away="profileOpen = false">
@@ -244,6 +332,23 @@
                                 <i class="fa-solid fa-box"></i>
                             </div>
                             <span :class="sidebarOpen ? 'block' : 'hidden'">Dashboard</span>
+                        </a>
+
+                        <!-- Alerts / Peringatan Stok & Expired -->
+                        <a href="{{ route('alerts.index') }}"
+                           class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition group {{ request()->routeIs('alerts.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532] hover:text-slate-200' }}">
+                            <div class="flex items-center">
+                                <div class="w-5 text-center mr-3 text-base {{ request()->routeIs('alerts.*') ? 'text-amber-400' : 'text-slate-400 group-hover:text-amber-400' }}">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                </div>
+                                <span :class="sidebarOpen ? 'block' : 'hidden'">Peringatan Stok</span>
+                            </div>
+                            @if(($globalAlerts['total'] ?? 0) > 0)
+                                <span :class="sidebarOpen ? 'inline-flex' : 'hidden'"
+                                      class="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                                    {{ $globalAlerts['total'] }}
+                                </span>
+                            @endif
                         </a>
 
                         <!-- Warehouses -->
@@ -426,6 +531,16 @@
                         <nav class="space-y-1">
                             <a href="{{ route('inventory.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('inventory.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
                                 <i class="fa-solid fa-box w-6 text-emerald-400"></i> Dashboard
+                            </a>
+                            <a href="{{ route('alerts.index') }}" class="flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('alerts.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
+                                <div class="flex items-center">
+                                    <i class="fa-solid fa-triangle-exclamation w-6 text-amber-400"></i> Peringatan Stok
+                                </div>
+                                @if(($globalAlerts['total'] ?? 0) > 0)
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-rose-500/20 text-rose-400">
+                                        {{ $globalAlerts['total'] }}
+                                    </span>
+                                @endif
                             </a>
                             <a href="{{ route('warehouses.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('warehouses.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
                                 <i class="fa-solid fa-layer-group w-6 text-emerald-400"></i> Warehouses

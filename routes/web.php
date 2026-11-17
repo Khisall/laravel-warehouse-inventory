@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AlertController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GoodsReceiptController;
 use App\Http\Controllers\InventoryController;
@@ -41,6 +42,13 @@ Route::middleware('auth')->group(function () {
         Route::post('/{product}/adjust-stock', [InventoryController::class, 'adjustStock'])->name('adjust-stock');
         Route::post('/bulk-action', [InventoryController::class, 'bulkAction'])->name('bulk-action');
         Route::get('/export/csv', [InventoryController::class, 'exportCsv'])->name('export-csv');
+    });
+
+    // Inventory Alert Center (Low-Stock & Expiry FEFO Monitoring)
+    Route::prefix('alerts')->name('alerts.')->group(function () {
+        Route::get('/', [AlertController::class, 'index'])->name('index');
+        Route::get('/summary', [AlertController::class, 'summaryApi'])->name('summary');
+        Route::post('/{product}/write-off', [AlertController::class, 'writeOffExpired'])->name('write-off');
     });
 
     // Warehouse Locations
