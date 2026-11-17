@@ -89,6 +89,11 @@ class Product extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function transferItems(): HasMany
+    {
+        return $this->hasMany(StockTransferItem::class, 'source_product_id');
+    }
+
     public function getImageUrlAttribute(): string
     {
         if ($this->image) {

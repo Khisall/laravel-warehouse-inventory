@@ -12,6 +12,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShippingController;
 use App\Http\Controllers\StockMovementController;
 use App\Http\Controllers\StockOpnameController;
+use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseController;
@@ -119,6 +120,25 @@ Route::middleware('auth')->group(function () {
         Route::post('/receive/{purchaseOrder}', [GoodsReceiptController::class, 'store'])->name('store');
         Route::get('/{goodsReceipt}', [GoodsReceiptController::class, 'show'])->name('show');
         Route::get('/{goodsReceipt}/print', [GoodsReceiptController::class, 'printGrn'])->name('print');
+    });
+
+    // Inter-Warehouse Transfers & Surat Jalan (Mutasi Antar Gudang)
+    Route::prefix('transfers')->name('transfers.')->middleware('role:super_admin,warehouse_manager,warehouse_staff')->group(function () {
+        Route::get('/', [StockTransferController::class, 'index'])->name('index');
+        Route::get('/create', [StockTransferController::class, 'create'])->name('create');
+        Route::post('/', [StockTransferController::class, 'store'])->name('store');
+        Route::get('/api/products-by-warehouse/{warehouseId}', [StockTransferController::class, 'productsByWarehouse'])->name('products-by-warehouse');
+        Route::get('/{transfer}', [StockTransferController::class, 'show'])->name('show');
+        Route::post('/{transfer}/dispatch', [StockTransferController::class, 'dispatchTransfer'])
+            ->middleware('role:super_admin,warehouse_manager')
+            ->name('dispatch');
+        Route::post('/{transfer}/receive', [StockTransferController::class, 'receiveTransfer'])
+            ->name('receive');
+        Route::post('/{transfer}/cancel', [StockTransferController::class, 'cancelTransfer'])
+            ->middleware('role:super_admin,warehouse_manager')
+            ->name('cancel');
+        Route::get('/{transfer}/surat-jalan', [StockTransferController::class, 'printSuratJalan'])
+            ->name('surat-jalan');
     });
 
     // Shipping

@@ -33,4 +33,14 @@ class Warehouse extends Model
     {
         return $this->hasMany(StockMovement::class);
     }
+
+    public function transfersOut(): HasMany
+    {
+        return $this->hasMany(StockTransfer::class, 'source_warehouse_id');
+    }
+
+    public function transfersIn(): HasMany
+    {
+        return $this->hasMany(StockTransfer::class, 'destination_warehouse_id');
+    }
 }

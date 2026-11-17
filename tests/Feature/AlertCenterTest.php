@@ -84,6 +84,7 @@ class AlertCenterTest extends TestCase
                 'expiry_date' => now()->subDays(5)->format('Y-m-d'), // Expired 5 days ago
             ]
         );
+        $this->expiredProduct->update(['quantity' => 15]);
         $this->expiredProduct->update(['expiry_date' => now()->subDays(5)->format('Y-m-d')]);
     }
 
