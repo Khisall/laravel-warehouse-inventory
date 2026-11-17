@@ -434,6 +434,15 @@
                                 </div>
                                 <span :class="sidebarOpen ? 'block' : 'hidden'">Reports</span>
                             </a>
+
+                            <!-- Analisis ABC & Turnover -->
+                            <a href="{{ route('analytics.index') }}"
+                               class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition group {{ request()->routeIs('analytics.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532] hover:text-slate-200' }}">
+                                <div class="w-5 text-center mr-3 text-base {{ request()->routeIs('analytics.*') ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400' }}">
+                                    <i class="fa-solid fa-chart-line"></i>
+                                </div>
+                                <span :class="sidebarOpen ? 'block' : 'hidden'">Analisis ABC</span>
+                            </a>
                         @endif
                     </nav>
                 </div>
@@ -571,6 +580,9 @@
                             @if(auth()->user()?->canViewFinancials())
                                 <a href="{{ route('reports.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('reports.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
                                     <i class="fa-solid fa-chart-pie w-6 text-emerald-400"></i> Reports
+                                </a>
+                                <a href="{{ route('analytics.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('analytics.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532]' }}">
+                                    <i class="fa-solid fa-chart-line w-6 text-emerald-400"></i> Analisis ABC
                                 </a>
                             @endif
                         </nav>

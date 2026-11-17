@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AlertController;
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GoodsReceiptController;
 use App\Http\Controllers\InventoryController;
@@ -130,6 +131,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports', [ReportController::class, 'index'])
         ->middleware('role:super_admin,warehouse_manager')
         ->name('reports.index');
+
+    // ABC Analysis & Inventory Turnover Velocity (Managers & Super Admin only)
+    Route::prefix('analytics')->name('analytics.')->middleware('role:super_admin,warehouse_manager')->group(function () {
+        Route::get('/', [AnalyticsController::class, 'index'])->name('index');
+        Route::get('/export-csv', [AnalyticsController::class, 'exportCsv'])->name('export-csv');
+        Route::get('/print', [AnalyticsController::class, 'print'])->name('print');
+    });
 
     // User & Team Management Module (Super Admin / Owner only)
     Route::prefix('users')->name('users.')->middleware('role:super_admin')->group(function () {
