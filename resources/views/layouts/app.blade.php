@@ -507,6 +507,15 @@
                         <span :class="sidebarOpen ? 'block' : 'hidden'">Activity & Inve...</span>
                     </a>
 
+                    <!-- SOP & Workflow PDF Docs -->
+                    <a href="{{ route('docs.workflow') }}"
+                       class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition group {{ request()->routeIs('docs.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532] hover:text-slate-200' }}">
+                        <div class="w-5 text-center mr-3 text-base {{ request()->routeIs('docs.*') ? 'text-emerald-400' : 'text-slate-400 group-hover:text-emerald-400' }}">
+                            <i class="fa-solid fa-file-pdf"></i>
+                        </div>
+                        <span :class="sidebarOpen ? 'block' : 'hidden'">Dokumentasi SOP (PDF)</span>
+                    </a>
+
                     <!-- What's New -->
                     <a href="{{ route('whats-new.index') }}"
                        class="flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition group {{ request()->routeIs('whats-new.*') ? 'nav-item-active' : 'text-slate-400 hover:bg-[#162532] hover:text-slate-200' }}">
@@ -632,6 +641,9 @@
                         @endif
                         <a href="{{ route('activity.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:bg-[#162532]">
                             <i class="fa-solid fa-clock-rotate-left w-6"></i> Activity & Inventory
+                        </a>
+                        <a href="{{ route('docs.workflow') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:bg-[#162532]">
+                            <i class="fa-solid fa-file-pdf w-6 text-emerald-400"></i> Dokumentasi SOP (PDF)
                         </a>
                         @if(auth()->user()?->isSuperAdmin())
                             <a href="{{ route('settings.index') }}" class="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:bg-[#162532]">

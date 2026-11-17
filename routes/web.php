@@ -195,4 +195,19 @@ Route::middleware('auth')->group(function () {
     // General Info
     Route::view('/whats-new', 'info.whats-new')->name('whats-new.index');
     Route::view('/help', 'info.help')->name('help.index');
+
+    // System Workflow & Operational SOP Documentation (PDF Ready)
+    Route::get('/docs/workflow', function () {
+        return view('docs.workflow');
+    })->name('docs.workflow');
+
+    Route::get('/docs/workflow/download-pdf', function () {
+        $pdfPath = public_path('docs/DOKUMENTASI_WORKFLOW_SISTEM_GUDANG_INVENTORY.pdf');
+        if (!file_exists($pdfPath)) {
+            return redirect()->route('docs.workflow')->with('error', 'File PDF belum digenerate.');
+        }
+        return response()->download($pdfPath, 'DOKUMENTASI_WORKFLOW_SISTEM_GUDANG_INVENTORY.pdf', [
+            'Content-Type' => 'application/pdf',
+        ]);
+    })->name('docs.download-pdf');
 });
